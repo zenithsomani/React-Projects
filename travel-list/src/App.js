@@ -12,12 +12,24 @@ function App() {
     setItems((items) => items.filter((items) => items.id !== id));
   }
 
+  function handleToggel(id) {
+    setItems((items) =>
+      items.map((item) =>
+        item.id === id ? { ...item, packed: !item.packed } : item
+      )
+    );
+  }
+
   return (
     <div className="app">
       <Logo />
       <Form onAddItem={handleAddItems} />
-      <PackingList items={items} onDeleteItem={handleDeleteItem} />
-      <Stats />
+      <PackingList
+        items={items}
+        onDeleteItem={handleDeleteItem}
+        onToggle={handleToggel}
+      />
+      <Stats items={items} />
     </div>
   );
 }
@@ -67,20 +79,32 @@ function Form({ onAddItem }) {
     </form>
   );
 }
-function PackingList({ items, onDeleteItem }) {
+function PackingList({ items, onDeleteItem, onToggle }) {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
-          <Item item={item} onDeleteItem={onDeleteItem} key={item.id} />
+          <Item
+            item={item}
+            onDeleteItem={onDeleteItem}
+            key={item.id}
+            onToggle={onToggle}
+          />
         ))}
       </ul>
     </div>
   );
 }
-function Item({ item, onDeleteItem }) {
+function Item({ item, onDeleteItem, onToggle }) {
   return (
     <li>
+      <input
+        type="checkbox"
+        value={item.packed}
+        onChange={() => {
+          onToggle(item.id);
+        }}
+      />
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
         {item.quantity} {item.description}
       </span>
@@ -88,10 +112,15 @@ function Item({ item, onDeleteItem }) {
     </li>
   );
 }
-function Stats() {
+function Stats({ items }) {
+  const packedCount = items.filter((item) => item.packed).length;
+
   return (
     <footer className="stats">
-      <em>You have X items on your list and you already packed x</em>
+      <em>
+        You have {items.length} items on your list, and you already packed{" "}
+        {packedCount} ({Math.round((packedCount / items.length) * 100) || 0}%)
+      </em>
     </footer>
   );
 }
